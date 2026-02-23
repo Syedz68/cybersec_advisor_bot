@@ -29,6 +29,44 @@ The system is built on three core modules:
 | OCR           | Tesseract + pytesseract                         |
 | Containerization | Docker & Docker Compose                      |
 
+## Dataset & Knowledge Base
+
+The RAG knowledge base is built from a curated collection of authoritative cybersecurity standards, frameworks, and guidelines. All sources are ingested in PDF, HTML, XML, or CSV format and indexed into the Qdrant vector database.
+
+### Knowledge Base Sources
+
+| # | Dataset / Standard | Description | Link |
+|---|---|---|---|
+| 1 | **OWASP Top 10 (2025)** | The ten most critical web application security risks | [owasp.org/Top10/2025](https://owasp.org/Top10/2025/) |
+| 2 | **OWASP ASVS 4.0** | Application Security Verification Standard for web app security requirements | [github.com/OWASP/ASVS](https://github.com/OWASP/ASVS/tree/v4.0.3) |
+| 3 | **NIST SP 800-63B** | Digital Identity Guidelines covering authentication, passwords, and phishing | [pages.nist.gov/800-63-4](https://pages.nist.gov/800-63-4/sp800-63b.html) |
+| 4 | **CWE Database** | Common Weakness Enumeration — a catalog of software and hardware weakness types | [cwe.mitre.org/data/downloads](https://cwe.mitre.org/data/downloads.html) |
+| 5 | **SANS Top 25 Software Errors** | The most dangerous software errors that lead to exploitable vulnerabilities | [sans.org/top25-software-errors](https://www.sans.org/top25-software-errors) |
+| 6 | **MITRE ATT&CK** | A globally accessible knowledge base of adversary tactics and techniques | [attack.mitre.org](https://attack.mitre.org/) |
+| 7 | **CIS Controls v8** | Prioritized cybersecurity best practices and safeguards for enterprise defense | [cisecurity.org/controls/v8](https://www.cisecurity.org/controls/v8) |
+| 8 | **CISA Phishing Guidance** | Joint guidance on stopping phishing attacks at Phase One | [CISA Phishing Guidance (PDF)](https://media.defense.gov/2023/Oct/18/2003322402/-1/-1/0/CSI-PHISHING-GUIDANCE.PDF) |
+| 9 | **SEI CERT Secure Coding Standards** | Rules and recommendations for developing safe and secure software (C, C++, Java, Perl) | [wiki.sei.cmu.edu/confluence](https://wiki.sei.cmu.edu/confluence/display/seccode/SEI+CERT+Coding+Standards) |
+
+### Evaluation Dataset
+
+The system was evaluated using a benchmark set of **50 manually curated cybersecurity questions** spanning 10 threat categories:
+
+| Category | Questions |
+|---|---|
+| Phishing | 8 |
+| Passwords | 7 |
+| 2FA / MFA | 5 |
+| Public Wi-Fi | 5 |
+| Ransomware | 6 |
+| Software Updates | 5 |
+| Social Engineering | 6 |
+| Device Security | 4 |
+| VPN | 4 |
+| Data Backup | 5 |
+| **Total** | **50** |
+
+Questions range from basic definitions to comparative security analyses, designed to test accuracy, citation quality, and hallucination resistance across diverse real-world scenarios.
+
 ## Project Structure
 
 The organized project structure is given below:
