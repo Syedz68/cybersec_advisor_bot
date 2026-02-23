@@ -23,3 +23,40 @@ The system is built on three core modules:
 - **Local LLM**: Llama 3.2 (via Ollama)
 - **Cloud LLM**: GPT-4o-mini (via OpenAI API)
 - **Document Parsing**: BeautifulSoup4, PyPDF2, Python XML/CSV libraries
+
+## Project Structure
+
+The organized project structure is given below:
+```
+cybersec_advisor_bot/
+├── docker-compose.yml              # Orchestrates all services (API, Qdrant, Ollama, Frontend)
+│
+├── backend/                        # Django REST API
+│   ├── advisor/
+│   │   ├── __init__.py
+│   │   ├── apps.py
+│   │   └── views.py                # All API logic: ingestion, RAG, LLM calls, analysis
+│   ├── core/
+│   │   ├── settings.py             # Django settings
+│   │   ├── urls.py                 # API route definitions
+│   │   ├── asgi.py
+│   │   └── wsgi.py
+│   ├── templates/
+│   │   └── index.html
+│   ├── manage.py
+│   ├── requirements.txt
+│   ├── Dockerfile
+│   ├── .env                        # Your local environment variables
+│   └── .env.example                # Template for environment setup
+│
+└── frontend/                       # Next.js UI
+    ├── pages/
+    │   ├── _app.js
+    │   └── index.js                # Main chat interface
+    ├── next.config.js
+    ├── package.json
+    ├── Dockerfile
+    ├── .env.local
+    └── .env.example
+```
+
