@@ -310,3 +310,12 @@ OPENAI_API_KEY=sk-your-key-here
 Restart the backend after changing this value.
 
 ---
+
+## Authors
+- Md. Moshiur Rahman, Email:
+- Monir Hossain, Email: monir81.mk@gmail.com
+- Syed Shah Asheq Ullah, Email: syedasheq@gmail.com
+
+## License
+
+This project is licensed under the MIT License. You are free to use, modify, and distribute it.
