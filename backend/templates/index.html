@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CyberIntegrity Advisor — Demo UI (with Integrity Check)</title>
+<style>
+  :root {
+    --bg:#0b1220; --bg2:#0f172a; --panel:#0b162c; --muted:#93a4bf; --text:#e6edf3;
+    --line:#1e293b; --brand:#00d0b0; --accent:#2dd4bf; --chip:#172554; --warn:#fbbf24; --ok:#22c55e; --bad:#ef4444;
+  }
+  *{box-sizing:border-box} html,body{height:100%} body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .app{display:grid;grid-template-rows:auto 1fr;min-height:100vh}
+  header{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--bg2),transparent)}
+  header .title{font-weight:700;letter-spacing:.2px}
+  .pill{border:1px solid var(--line);padding:4px 10px;border-radius:999px;font-size:12px;background:var(--chip);color:#c7d2fe}
+  .brand{color:var(--brand)}
+  .container{display:grid;grid-template-columns:260px 1fr 380px;gap:16px;padding:16px}
+  .panel{background:linear-gradient(180deg,var(--panel),#0c1426);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .panel h3{margin:16px;font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:#9fb3d9}
+  .panel .body{padding:12px 16px}
+  .muted{color:var(--muted)}
+  .btn{border:1px solid var(--line);background:#0c1730;color:var(--text);padding:10px 12px;border-radius:10px;cursor:pointer}
+  .btn:hover{border-color:#314561}
+  input,textarea{width:100%;border:1px solid var(--line);background:#0a1326;color:var(--text);padding:10px 12px;border-radius:10px;outline:none}
+  input::placeholder, textarea::placeholder{color:#5b6a86}
+  .chiprow{display:flex;flex-wrap:wrap;gap:6px}
+  .chipbtn{background:#0c1a34;border:1px solid var(--line);color:#c7d2fe;padding:6px 10px;border-radius:999px;font-size:12px;cursor:pointer}
+  .chipbtn:hover{border-color:#324560}
+  .chat{display:flex;flex-direction:column;height:100%}
+  .messages{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+  .bubble{max-width:80%;padding:12px 14px;border-radius:14px;border:1px solid var(--line);box-shadow:0 0 0 1px rgba(0,0,0,.08) inset}
+  .u{align-self:flex-end;background:#101b33}
+  .b{align-self:flex-start;background:#0b1c2e}
+  .meta{font-size:12px;color:#9fb3d9;margin-top:6px}
+  .composer{padding:12px;border-top:1px solid var(--line);display:flex;gap:8px}
+  .w100{flex:1}
+  .row{display:flex;gap:8px;align-items:center}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .source{border:1px solid var(--line);background:#0b1a2f;border-radius:10px;padding:10px;margin-bottom:10px}
+  .source .srcurl{color:#8ed1ff;text-decoration:none}
+  .source .tag{display:inline-block;background:#0e223f;color:#cfe5ff;border:1px solid #1a3b69;padding:2px 8px;border-radius:999px;font-size:11px;margin-right:6px}
+  .mode{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .toggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;gap:2px}
+  .toggle button{background:transparent;border:0;color:var(--text);padding:6px 10px;border-radius:999px;font-size:12px;cursor:pointer}
+  .toggle button.active{background:#12325a}
+  .badge{display:inline-block;background:#052e2b;border:1px solid #0b544e;color:#9ff3e5;padding:2px 8px;border-radius:999px;font-size:12px}
+  .hint{font-size:12px;color:#97a8c6;margin-top:6px}
+  .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#111827;border:1px solid #22324a;padding:2px 6px;border-radius:6px}
+  .pill-warn{background:#3b2a07;color:#fde68a;border:1px solid #6b4f0d}
+  .pct{font-weight:700}
+  .meter{height:8px;background:#0f172a;border:1px solid #24324c;border-radius:999px;overflow:hidden}
+  .meter > div{height:100%;background:linear-gradient(90deg,#0ea5e9,#22c55e,#eab308,#ef4444)}
+  table{width:100%;border-collapse:collapse;border:1px solid var(--line);}
+  th,td{border-top:1px solid var(--line);padding:8px;text-align:left;font-size:13px}
+  th{color:#9fb3d9;text-transform:uppercase;letter-spacing:.06em;background:#0d1b2c}
+  .small{font-size:12px;color:#9fb3d9}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="title">🔒 <span class="brand">CyberIntegrity Advisor</span> — Demo</div>
+    <span class="pill">RAG</span>
+    <span class="pill">Citations</span>
+    <span class="pill pill-warn">Integrity Check</span>
+    <div class="mode">
+      <span class="muted">Mode</span>
+      <div class="toggle" id="modeToggle">
+        <button class="active" data-mode="LOCAL">Local</button>
+        <button data-mode="CLOUD">Cloud</button>
+      </div>
+      <span class="badge" id="status">Demo Mode</span>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Left: Docs / Ingest -->
+    <aside class="panel">
+      <h3>Knowledge Base</h3>
+      <div class="body">
+        <div class="row">
+          <input id="url" placeholder="https://owasp.org/www-project-top-ten/">
+          <button class="btn" onclick="addSource()">Ingest URL</button>
+        </div>
+        <div class="hint">Tip: Add NIST / OWASP / CERT pages. Demo stores locally only.</div>
+        <hr style="border-color:var(--line);margin:14px 0">
+        <div class="chiprow">
+          <button class="chipbtn" onclick="quick('NIST SP 800-63B')">NIST SP 800-63B</button>
+          <button class="chipbtn" onclick="quick('OWASP Top 10 2021')">OWASP Top 10</button>
+          <button class="chipbtn" onclick="quick('CISA Phishing Guidance')">CISA Phishing</button>
+        </div>
+        <div style="margin-top:10px" id="kbList" class="muted">No documents ingested yet.</div>
+      </div>
+    </aside>
+
+    <!-- Middle: Chat -->
+    <section class="panel chat">
+      <div class="messages" id="messages">
+        <div class="bubble b">
+          Hi! I'm CyberIntegrity Advisor with access to OWASP, NIST, and CISA guidelines. Ask me about phishing, passwords, 2FA, or safe browsing. I will answer with citations.
+          <div class="meta">Knowledge base loading • RAG enabled • Citations required</div>
+        </div>
+      </div>
+      <div class="composer">
+        <input id="q" class="w100" placeholder="Ask a cybersecurity question… e.g., 'Is this email a phishing attempt?'">
+        <button class="btn" onclick="send()">Ask</button>
+      </div>
+    </section>
+
+    <!-- Right: Sources / Citations + Integrity -->
+    <aside class="panel">
+      <h3>Answer Evidence</h3>
+      <div class="body" id="evidence">
+        <div class="muted">Citations tied to the latest answer will appear here.</div>
+      </div>
+      <h3 style="border-top:1px solid var(--line);padding-top:10px;margin-top:10px">Security Checks</h3>
+      <div class="body">
+        <div class="source">
+          <span class="tag">PII Redaction</span>
+          <div class="muted">emails / phone / IDs masked in prompt</div>
+        </div>
+        <div class="source">
+          <span class="tag">Guardrails</span>
+          <div class="muted">refuse unsafe steps • require citations</div>
+        </div>
+      </div>
+
+      <h3 style="border-top:1px solid var(--line);padding-top:10px;margin-top:10px">Integrity (Similarity / Plagiarism)</h3>
+      <div class="body">
+        <textarea id="integrityText" rows="6" placeholder="Paste text to check for similarity…"></textarea>
+        <div class="row" style="margin-top:8px">
+          <input id="threshold" type="number" min="0.6" max="0.99" step="0.01" value="0.82" title="Cosine threshold">
+          <button class="btn" onclick="runIntegrity()">Check Similarity</button>
+        </div>
+        <div class="hint">Demo computes a fake score and shows sample matches from your 'Knowledge Base'.</div>
+        <div id="integritySummary" style="margin-top:10px"></div>
+        <div id="integrityTable" style="margin-top:10px"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+  const API_BASE = ''; // Use relative URLs since we're served from the backend
+  const messages = document.getElementById('messages');
+  const evidence = document.getElementById('evidence');
+  const kbList = document.getElementById('kbList');
+  const urlInput = document.getElementById('url');
+  const q = document.getElementById('q');
+  const modeToggle = document.getElementById('modeToggle');
+  const statusBadge = document.getElementById('status');
+
+  const kb = [];
+  let currentMode = 'LOCAL';
+  
+  modeToggle.addEventListener('click', (e)=>{
+    if(e.target.tagName === 'BUTTON'){
+      [...modeToggle.children].forEach(b=>b.classList.remove('active'));
+      e.target.classList.add('active');
+      currentMode = e.target.dataset.mode;
+      statusBadge.textContent = currentMode === 'LOCAL' ? '🦙 Llama 3.2' : '☁️ GPT-4o-mini';
+    }
+  });
+
+  async function addSource(){
+    const u = urlInput.value.trim();
+    if(!u) return;
+    
+    statusBadge.textContent = 'Ingesting...';
+    try {
+      const response = await fetch('/api/ingest/url', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({url: u})
+      });
+      const data = await response.json();
+      
+      if(data.status === 'ok'){
+        kb.push({url: u, chunks: data.chunks_count || 0});
+        renderKB();
+        urlInput.value = "";
+        statusBadge.textContent = `✓ Ingested ${data.chunks_count} chunks`;
+        setTimeout(() => statusBadge.textContent = currentMode === 'LOCAL' ? '🦙 Llama 3.2' : '☁️ GPT-4o-mini', 2000);
+      } else {
+        statusBadge.textContent = '❌ Ingest failed';
+      }
+    } catch(err) {
+      console.error('Ingest error:', err);
+      statusBadge.textContent = '❌ Connection error';
+    }
+  }
+
+  function quick(name){
+    // For quick buttons, we'll just show them as placeholders
+    kb.push({url: name, chunks: 0});
+    renderKB();
+  }
+
+  function renderKB(){
+    if(kb.length===0){ kbList.innerHTML = 'No documents ingested yet.'; return; }
+    kbList.innerHTML = kb.map(x => {
+      if(typeof x === 'string') return `• <span>${x}</span>`;
+      return x.url.startsWith('http') ? 
+        `• <a href="${x.url}" class="srcurl" target="_blank">${x.url}</a> <span class="muted">(${x.chunks} chunks)</span>` : 
+        `• <span>${x.url}</span>`;
+    }).join("<br>");
+  }
+
+  function addBubble(content, who='b'){
+    const div = document.createElement('div');
+    div.className = 'bubble ' + (who==='u'?'u':'b');
+    div.innerHTML = content;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  async function send(){
+    const text = q.value.trim();
+    if(!text) return;
+    
+    addBubble(text, 'u');
+    q.value = "";
+    statusBadge.textContent = 'Thinking...';
+    
+    try {
+      const response = await fetch('/api/ask', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          question: text,
+          mode: currentMode
+        })
+      });
+      const data = await response.json();
+      
+      if(data.answer){
+        const answerHtml = `${data.answer}<div class="meta">Mode: ${currentMode} • ${data.sources ? data.sources.length : 0} sources</div>`;
+        addBubble(answerHtml, 'b');
+        
+        // Display sources/citations
+        if(data.sources && data.sources.length > 0){
+          evidence.innerHTML = data.sources.map(s => `
+            <div class="source">
+              <div class="srcurl">${s.url || 'Document'}</div>
+              <div class="muted">${s.text ? s.text.substring(0, 150) + '...' : ''}</div>
+              <div class="small">Score: ${(s.score || 0).toFixed(3)}</div>
+            </div>
+          `).join("");
+        } else {
+          evidence.innerHTML = '<div class="muted">No sources retrieved</div>';
+        }
+        
+        statusBadge.textContent = currentMode === 'LOCAL' ? '🦙 Llama 3.2' : '☁️ GPT-4o-mini';
+      } else {
+        addBubble('❌ Error: ' + (data.error || 'Unknown error'), 'b');
+        statusBadge.textContent = '❌ Error';
+      }
+    } catch(err) {
+      console.error('Ask error:', err);
+      addBubble('❌ Connection error. Make sure backend is running.', 'b');
+      statusBadge.textContent = '❌ Connection error';
+    }
+  }
+  
+  // Allow Enter to send
+  q.addEventListener('keypress', (e) => {
+    if(e.key === 'Enter') send();
+  });
+
+  // Integrity (Similarity/Plagiarism) — Demo-only scoring
+  function runIntegrity(){
+    const text = document.getElementById('integrityText').value.trim();
+    const thr = parseFloat(document.getElementById('threshold').value || "0.82");
+    if(!text){
+      document.getElementById('integritySummary').innerHTML = '<span class="muted">Paste some text to check.</span>';
+      document.getElementById('integrityTable').innerHTML = '';
+      return;
+    }
+    // Fake score based on length and presence of certain words
+    const base = Math.min(40, Math.floor(text.split(/\s+/).length/8));
+    const bonus = /password|phishing|owasp|nist|vpn/i.test(text) ? 12 : 0;
+    const score = Math.min(95, base + bonus + (kb.length*2));
+    const color = score>50 ? 'var(--bad)' : score>20 ? '#eab308' : 'var(--ok)';
+    document.getElementById('integritySummary').innerHTML = `
+      <div class="row" style="align-items:center;gap:10px">
+        <div><b>Overall Overlap:</b> <span class="pct" style="color:${color}">${score}%</span></div>
+      </div>
+      <div class="meter" style="margin-top:6px"><div style="width:${score}%"></div></div>
+      <div class="small" style="margin-top:6px">Threshold: cosine ≥ ${thr.toFixed(2)} (demo only)</div>
+    `;
+
+    const samples = [
+      {span:"Use passphrases (12+ chars) and enable MFA.", src:"NIST SP 800‑63B §5.1.1", url:"https://pages.nist.gov/800-63-3/sp800-63b.html", sim:0.91},
+      {span:"Be cautious of urgent language and link spoofing.", src:"OWASP Phishing Awareness", url:"https://owasp.org/www-community/attacks/Phishing", sim:0.88},
+      {span:"Avoid sensitive actions over public Wi‑Fi; consider a VPN.", src:"NIST SP 800‑46 Rev.2", url:"https://csrc.nist.gov/publications/detail/sp/800-46/rev-2/final", sim:0.84}
+    ];
+    const rows = samples.map((m,i)=>`
+      <tr>
+        <td>${i+1}</td>
+        <td>${m.span}</td>
+        <td><a class="srcurl" href="${m.url}" target="_blank">${m.src}</a></td>
+        <td>${m.sim.toFixed(2)}</td>
+        <td>${m.sim >= thr ? 'Yes — add citation' : 'No'}</td>
+      </tr>
+    `).join("");
+
+    document.getElementById('integrityTable').innerHTML = `
+      <table>
+        <thead><tr><th>#</th><th>Matched Passage</th><th>Source</th><th>Similarity</th><th>Needs Citation?</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="hint" style="margin-top:6px">Note: Demo uses canned matches. In the real system, matches would come from your vector DB (Qdrant) + BM25.</div>
+    `;
+  }
+
+  // Pre-ingest essential cybersecurity sources
+  const defaultSources = [
+    'https://owasp.org/www-project-top-ten/',
+    'https://csrc.nist.gov/publications/sp800-63b',
+    'https://www.cisa.gov/secure-our-world'
+  ];
+
+  async function preloadKnowledgeBase() {
+    // Check if knowledge base is already populated
+    try {
+      const response = await fetch('/api/ask', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          question: "test knowledge base",
+          mode: "LOCAL"
+        })
+      });
+      const data = await response.json();
+      
+      // If we get a good response with sources, KB is already populated
+      if(data.sources && data.sources.length > 0) {
+        statusBadge.textContent = '✓ Knowledge base ready';
+        setTimeout(() => statusBadge.textContent = currentMode === 'LOCAL' ? '🦙 Llama 3.2' : '☁️ GPT-4o-mini', 2000);
+        return;
+      }
+    } catch(err) {
+      console.log('Knowledge base check failed, proceeding with auto-load...');
+    }
+    
+    // Auto-load essential sources if KB is empty
+    statusBadge.textContent = 'Loading knowledge base...';
+    let loadedCount = 0;
+    
+    for (const url of defaultSources) {
+      try {
+        const response = await fetch('/api/ingest/url', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({url: url})
+        });
+        const data = await response.json();
+        
+        if(data.status === 'ok'){
+          kb.push({url: url, chunks: data.chunks_count || 0});
+          loadedCount++;
+        }
+      } catch(err) {
+        console.warn(`Failed to load ${url}:`, err);
+      }
+    }
+    
+    renderKB();
+    statusBadge.textContent = `✓ Loaded ${loadedCount}/${defaultSources.length} sources`;
+    setTimeout(() => statusBadge.textContent = currentMode === 'LOCAL' ? '🦙 Llama 3.2' : '☁️ GPT-4o-mini', 3000);
+  }
+
+  // Initialize on load
+  window.addEventListener('load', ()=>{
+    statusBadge.textContent = '🦙 Llama 3.2';
+    console.log('CyberAdvisor ready! Backend:', API_BASE);
+    preloadKnowledgeBase();
+  });
+</script>
+</body>
+</html>
