@@ -350,9 +350,9 @@ Restart the backend after changing this value.
 ---
 
 ## Authors
-- Md. Moshiur Rahman, Email:
-- Monir Hossain, Email: monir81.mk@gmail.com
-- Syed Shah Asheq Ullah, Email: syedasheq@gmail.com
+- Md. Moshiur Rahman, Email: 0424054501@grad.cse.buet.ac.bd
+- Monir Hossain, Email: 1024052036@grad.cse.buet.ac.bd
+- Syed Shah Asheq Ullah, Email: 1024052025@grad.cse.buet.ac.bd
 
 ## License
 
